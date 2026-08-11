@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.ipynb_checkpoints/
+.DS_Store
+
+# Données de collecte AIS : volumineuses, régénérables, et surtout non publiables
+# telles quelles (positions de navires nommés). Seuls les agrégats le sont.
+data/ais/
+*.sqlite
