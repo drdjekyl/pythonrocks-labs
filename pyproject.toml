@@ -16,8 +16,9 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ruff>=0.6",
- "jupyter>=1.1",
- "matplotlib>=3.9",
+    "jupyter>=1.1",
+    "matplotlib>=3.9",
+    "pytest>=9.1.1",
 ]
 
 [build-system]
@@ -42,3 +43,8 @@ ignore = [
     "RUF002",
     "RUF003",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["src"]
