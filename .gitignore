@@ -12,3 +12,6 @@ data/ais/
 
 # Figures générées : reproductibles en une commande, publiées dans la vitrine.
 figures/
+
+# Couches silver/gold : reconstructibles depuis bronze en une commande.
+data/lac/
