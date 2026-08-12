@@ -35,6 +35,17 @@ RACINE = Path(__file__).resolve().parents[2]
 DONNEES = RACINE / "data" / "yachts.parquet"
 SORTIE = RACINE / "figures"
 
+# Variante mobile. Une revue visuelle sur écran réel a montré qu'un SVG à viewBox fixe,
+# simplement écrasé en CSS à 390px, voyait sa police interne de 11px tomber sous 5px
+# effectifs — illisible. On régénère donc des figures pensées pour l'étroitesse : moins
+# larges, police plus grande, et panneaux empilés au lieu d'être juxtaposés.
+MOBILE = False
+
+
+def dim(large, etroit):
+    """Choisit la valeur selon la variante en cours."""
+    return etroit if MOBILE else large
+
 
 def espace(n):
     """Séparateur de milliers français : une espace, pas une virgule."""
@@ -61,7 +72,7 @@ def fig_decennies(df):
     d["dec"] = (d.year // 10 * 10).astype(int)
     g = d.groupby("dec")["overall_length"].agg(["median", "max"])
 
-    fig, ax = plt.subplots(figsize=(8.2, 4.4))
+    fig, ax = plt.subplots(figsize=dim((8.2, 4.4), (5.0, 4.6)))
     ax.plot(g.index, g["max"], color=SERIES[1], linewidth=2, marker="o", markersize=5,
             markeredgecolor=SURFACE, markeredgewidth=2, label="Le plus grand")
     ax.plot(g.index, g["median"], color=SERIES[0], linewidth=2, marker="o", markersize=5,
@@ -92,7 +103,7 @@ def fig_loi_echelle(df):
     d = d[(d.overall_length > 0) & (d.gross_tonnage > 0)]
     pente, ordonnee, n = pente_log(d, "overall_length", "gross_tonnage")
 
-    fig, ax = plt.subplots(figsize=(8.2, 5.0))
+    fig, ax = plt.subplots(figsize=dim((8.2, 5.0), (5.0, 5.2)))
     # Nuage rastérisé : 9 218 cercles vectoriels pèseraient plus d'un mégaoctet.
     # Les axes, la grille et le texte restent vectoriels.
     ax.scatter(d.overall_length, d.gross_tonnage, s=7, alpha=0.16, color=ACCENT,
@@ -141,7 +152,14 @@ def fig_piege_v3(df):
           f"n={len(d)})")
 
     bandes = [(26, 40, "26–40 m"), (40, 60, "40–60 m"), (60, 200, "60 m et plus")]
-    fig, axes = plt.subplots(1, 3, figsize=(11.5, 4.6), sharex=True, sharey=True)
+    # Juxtaposés, les trois panneaux font tomber le plus petit label à ~2,7px sur mobile.
+    # Empilés, chacun retrouve toute la largeur disponible.
+    fig, axes = plt.subplots(
+        *dim((1, 3), (3, 1)),
+        figsize=dim((11.5, 4.6), (5.0, 9.6)),
+        sharex=True,
+        sharey=True,
+    )
 
     for ax, (bas, haut, nom), couleur in zip(axes, bandes, SERIES, strict=True):
         sous = d[d.overall_length.between(bas, haut)]
@@ -166,16 +184,28 @@ def fig_piege_v3(df):
         ax.set_xticks([10, 15, 20, 30, 45])
         ax.xaxis.set_major_formatter(mticker.ScalarFormatter())
         ax.minorticks_off()
-        ax.set_xlabel("Vitesse max (nœuds)")
+        if not MOBILE or ax is axes[-1]:
+            ax.set_xlabel("Vitesse max (nœuds)")
 
-    axes[0].set_ylabel("Puissance moteur (kW)")
+    # Un seul libellé d'axe Y : répété sur trois panneaux empilés, il mange la largeur
+    # qu'on vient justement de leur rendre.
+    (axes[1] if MOBILE else axes[0]).set_ylabel("Puissance moteur (kW)")
     axes[2].annotate("v³ attendu", xy=(0.62, 0.9), xycoords="axes fraction",
                      fontsize=10, color=MUTED)
     # Un seul titre, géré par matplotlib : `bbox_inches="tight"` recadre la figure après
     # coup, donc tout texte posé en coordonnées figure se retrouve décalé. Le chiffre de la
     # pente globale vit dans la légende de la figure, côté article — c'est sa place.
-    fig.suptitle("À taille contrainte, la pente monte — sans jamais atteindre 3",
-                 x=0.075, ha="left", fontsize=13, fontweight="600", color=INK)
+    fig.suptitle(
+        dim(
+            "À taille contrainte, la pente monte — sans jamais atteindre 3",
+            "La pente monte,\nsans jamais atteindre 3",
+        ),
+        x=0.02 if MOBILE else 0.075,
+        ha="left",
+        fontsize=dim(13, 16),
+        fontweight="600",
+        color=INK,
+    )
     return fig
 
 
@@ -187,7 +217,7 @@ def fig_chantiers(df):
     autres = int(b.iloc[8:].sum())
     part_top = top.sum() / b.sum() * 100
 
-    fig, ax = plt.subplots(figsize=(8.2, 4.6))
+    fig, ax = plt.subplots(figsize=dim((8.2, 4.6), (5.0, 5.4)))
     etiquettes = [f"Autres ({espace(len(b) - 8)} chantiers)", *top.index]
     valeurs = [autres, *top.to_numpy()]
     ax.barh(etiquettes, valeurs, color=[CONTEXTE] + [ACCENT] * len(top), height=0.68)
@@ -206,7 +236,7 @@ def fig_chantiers(df):
 # --------------------------------------------------------------------------- 5
 def fig_biais(df):
     """Une distribution — et une coupure qui saute aux yeux."""
-    fig, ax = plt.subplots(figsize=(8.2, 4.0))
+    fig, ax = plt.subplots(figsize=dim((8.2, 4.0), (5.0, 4.2)))
     ax.hist(df.overall_length, bins=np.arange(0, 190, 2.5), color=ACCENT,
             edgecolor=SURFACE, linewidth=0.8)
     ax.axvline(26, color=SERIES[1], linewidth=2)
@@ -227,8 +257,23 @@ def fig_biais(df):
 
 
 def main():
+    global MOBILE
+    df = None
+    for mobile in (False, True):
+        MOBILE = mobile
+        df = _produire(df, mobile)
+    return 0
+
+
+def _produire(df, mobile):
     appliquer_style()
-    df = charger()
+    if mobile:
+        # Police relative plus grande : la figure sera affichée plus étroite.
+        import matplotlib as mpl
+
+        mpl.rcParams.update({"font.size": 15, "axes.titlesize": 17})
+    if df is None:
+        df = charger()
     figures = [
         ("01-decennies", fig_decennies),
         ("02-loi-echelle", fig_loi_echelle),
@@ -236,13 +281,14 @@ def main():
         ("04-chantiers", fig_chantiers),
         ("05-biais-selection", fig_biais),
     ]
+    suffixe = "-mobile" if mobile else ""
     total = 0
     for nom, fabrique in figures:
-        poids = enregistrer(fabrique(df), SORTIE / f"{nom}.svg")
+        poids = enregistrer(fabrique(df), SORTIE / f"{nom}{suffixe}.svg")
         total += poids
-        print(f"  {nom:20} {poids:6.0f} Ko")
-    print(f"  {'total':20} {total:6.0f} Ko")
-    return 0
+        print(f"  {nom}{suffixe:<8} {poids:6.0f} Ko")
+    print(f"  total{'(mobile)' if mobile else '':>16} {total:6.0f} Ko")
+    return df
 
 
 if __name__ == "__main__":
