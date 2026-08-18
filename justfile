@@ -25,3 +25,10 @@ donnees:
 # Ouvre les notebooks
 lab:
     uv run jupyter lab
+
+# Lance les tests (pas de `--cov` ici : ni pytest-cov ni CI dans ce dépôt)
+test:
+    uv run pytest
+
+# Tout vérifier avant de committer — ce dépôt n'a ni pre-commit ni CI
+check: lint test

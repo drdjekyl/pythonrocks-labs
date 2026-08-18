@@ -83,9 +83,9 @@ l'identique, et l'API applique 60 requêtes/minute tout en hébergeant la vitrin
 
 - Python 3.12+, `uv`. Lint `ruff`, tests `pytest`.
 - **Ni pre-commit ni CI dans ce dépôt** — contrairement à tous les autres du workspace. Il faut donc
-  lancer `uv run ruff check .`, `uv run ruff format --check .` et `uv run pytest` **à la main** avant
-  de committer. C'est l'exception qui justifie de déroger à la règle « pas de lint manuel » : ici
-  rien d'autre n'attrape une régression.
+  lancer `just check` (soit `uv run ruff check .`, `uv run ruff format --check .` et
+  `uv run pytest`) **à la main** avant de committer. C'est l'exception qui justifie de déroger à la
+  règle « pas de lint manuel » : ici rien d'autre n'attrape une régression.
 - Le référentiel SFC des moteurs vit dans `api-lab`, pas ici, et son chargement sur les hôtes vivants
   passe par `platform/host/ansible/roles/restore/files/seed_engines.js` — voir `api-lab/CLAUDE.md`.
 - Budget doc : `README.md` (public, voir Scope) + `CLAUDE.md` + `MAINTENANCE.md`.
@@ -98,5 +98,5 @@ uv run jupyter lab
 uv run python src/labs/yachts.py                    # régénère l'instantané (~2 min, throttlé)
 uv run python src/labs/registres_classe.py <taille> # collecte IMO/notations, reprenable
 uv run python -m labs.reglementaire                 # répartition des obligations sur le catalogue
-uv run ruff check . && uv run ruff format --check . && uv run pytest
+just check                                          # lint + tests, à lancer à la main avant de committer
 ```
