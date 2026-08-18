@@ -55,9 +55,9 @@ l'identique, et l'API applique 60 requêtes/minute tout en hébergeant la vitrin
   variable de modèle appliquée à la flotte. Ne pas repartir chercher un volume qui n'existe pas.
 - **Un appariement par nom seul est un appariement faux.** L'appariement AIS publié tourne à 85 %
   de faux positifs. `registres_classe.py` confirme chaque correspondance par un second champ
-  concordant (année ±1 an, longueur ±1 m, ou constructeur) et rejette le reste : la moitié des
-  correspondances DNV et la quasi-totalité des RINA sont tombées à ce filtre. C'est le filtre qui
-  rend le chiffre de 1 007 solide.
+  concordant (année ±1 an, longueur ±1 m, ou constructeur) et rejette le reste : 83 % des candidats
+  DNV et 90 % des RINA sont tombés à ce filtre (44 % chez LR). C'est le filtre qui rend le chiffre
+  de 1 007 solide.
 - **Distinguer « aucune notation » de « navire absent du registre ».** Azzam ressort avec une chaîne
   vide : c'est une information réelle, l'armateur n'a rien pris. Un navire introuvable est une
   absence de donnée. Les confondre ruine le jeu de validation.

@@ -63,33 +63,47 @@ seules exceptions constatées, plutôt que d'inférer une règle générale.
 
 ## Ce que la collecte réelle a donné, et ce que ça implique
 
-Une exécution sur 997 navires (les 97 déjà tagués DNV par le catalogue + 900 tirés au sort,
-`echantillon(taille=900)`) a produit `data/registres_classe.parquet` : 308 lignes, dont 142
-confirmées et 166 rejetées.
+Les chiffres ci-dessous sont ceux de la collecte **complète**, passée sur les 9 407 navires du
+catalogue et non plus sur un échantillon. Elle a produit `data/registres_classe.parquet` :
+2 642 lignes, dont 1 007 confirmées et 1 635 rejetées.
+
+Une ligne est un couple (navire, source), jamais un navire : ces 2 642 lignes ne couvrent que
+2 035 navires distincts. Les 7 372 autres n'ont produit aucune ligne — aucun candidat au nom
+exact n'a remonté pour eux, ce qui est une absence d'observation et non une observation
+négative (voir « Deux absences » plus haut).
 
 | Source | Confirmées | Rejetées | Taux de rejet |
 | --- | --- | --- | --- |
-| DNV  | 51 | 49 | 49 % |
-| LR   | 84 | 72 | 46 % |
-| RINA |  7 | 45 | 87 % |
+| DNV  | 107 | 535 | 83 % |
+| LR   | 853 | 676 | 44 % |
+| RINA |  47 | 424 | 90 % |
 
-**Ce taux de rejet élevé est un succès de la méthode, pas un raté.** Près de la moitié des
-candidats DNV et la quasi-totalité des candidats RINA trouvés par nom exact ont été écartés
-faute de second champ concordant — sans cette exigence, le volume de correspondances aurait
-doublé, rempli de faux positifs indiscernables des vrais. Le nombre qui compte n'est donc pas
-« combien de candidats trouvés », c'est « combien confirmés » : 142, dont 132 avec un IMO non
-nul (voir `imo_confirmes` plus bas — les dix restants sont des candidats confirmés par un
-second champ mais dont le registre lui-même ne publie pas d'IMO, un cas réel et rare, pas une
-absence de collecte).
+**Ce taux de rejet élevé est un succès de la méthode, pas un raté.** Cinq candidats DNV sur
+six et neuf candidats RINA sur dix, pourtant trouvés au nom exact, ont été écartés faute de
+second champ concordant — sans cette exigence le jeu de données aurait plus que doublé, rempli
+de faux positifs indiscernables des vrais. Le nombre qui compte n'est donc pas « combien de
+candidats trouvés », c'est « combien confirmés ».
+
+Trois nombres voisins, à ne surtout pas confondre dans un article : **1 007** correspondances
+confirmées, dont **983** portent un IMO (les 24 restantes sont confirmées par un second champ
+mais le registre lui-même ne publie pas d'IMO pour ce navire — un cas réel, pas un défaut de
+collecte) ; et **964 navires distincts** portant un IMO, seul des trois à se joindre au
+catalogue puisque c'est le seul qui compte un navire une fois (`imo_confirmes` plus bas, qui
+déduplique par `yacht_id`). Les 1 007 correspondances confirmées, elles, concernent 983
+navires distincts — le même nombre que les lignes portant un IMO, par pure coïncidence.
 
 **Le rendement en notations environnementales est le résultat, pas une contre-performance.**
-Sur les 9 407 navires du catalogue, 31 ont une notation de design confirmée et 12 une
-notation en exploitation confirmée (les deux se recoupent largement). Ce n'est pas un
-sous-échantillonnage à corriger en élargissant la collecte : c'est la proportion réelle de
-yachts privés dont la notation environnementale de classe est publique. **Cette couche ne
-peut donc pas devenir une variable appliquée à la flotte entière** — ni par extrapolation, ni
-par modèle — elle reste ce pour quoi elle a été construite : un petit ensemble d'études de cas
-de haute confiance, à des fins de validation, jamais une colonne à joindre sur les 9 407.
+Sur les 9 407 navires du catalogue, 74 ont une notation de design confirmée et 37 une notation
+en exploitation confirmée (les deux se recoupent largement : 36 navires en commun, 75 au total
+en portent au moins une). Toutes viennent de DNV, seule des trois sources à en publier — et
+sur ses 107 correspondances confirmées, 33 rendent une chaîne de design vide et 70 une chaîne
+d'exploitation vide, ces vides étant des résultats réels et non des trous. Ce n'est pas un
+sous-échantillonnage à corriger en élargissant la collecte, puisque la collecte a déjà couvert
+la flotte entière : c'est la proportion réelle de yachts privés dont la notation
+environnementale de classe est publique. **Cette couche ne peut donc pas devenir une variable
+appliquée à la flotte entière** — ni par extrapolation, ni par modèle — elle reste ce pour quoi
+elle a été construite : un petit ensemble d'études de cas de haute confiance, à des fins de
+validation, jamais une colonne à joindre sur les 9 407.
 
 ## Politesse
 
