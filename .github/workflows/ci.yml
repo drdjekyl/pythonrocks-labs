@@ -29,7 +29,7 @@ jobs:
       # Les actions publiées par GitHub lui-même (`actions/*`) restent épinglées
       # par version. Celles d'un tiers le sont par empreinte de commit — voir
       # l'étape suivante.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # `@<empreinte> # v10.0.1` plutôt que `@v10` : un tag Git n'est qu'une
       # étiquette, et son auteur peut la redéplacer vers un autre commit à tout
