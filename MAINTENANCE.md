@@ -15,9 +15,10 @@ laisser grossir sans revue.
   (2) Les **seuils Tier NOx** utilisés par `vecteur_impacts.py` pour son diagnostic viennent de
   DieselNet ; `imo.org` a répondu 500 aux deux tentatives de sourçage. À re-sourcer sur l'OMI ou
   EUR-Lex.
-  (3) Les **983 IMO et 74 notations** de `data/registres_classe.parquet` n'ont pas été revérifiés à
-  la main contre les registres : seule la logique d'appariement est testée, sur des réponses
-  simulées. Un échantillon suffirait.
+  (3) Les **983 correspondances confirmées portant un IMO** (soit 964 navires distincts, voir
+  `imo_confirmes()`) et les **74 notations de design** de `data/registres_classe.parquet` n'ont pas
+  été revérifiées à la main contre les registres : seule la logique d'appariement est testée, sur
+  des réponses simulées. Un échantillon suffirait.
 
 ## ☐ Priorité moyenne
 
@@ -27,6 +28,13 @@ laisser grossir sans revue.
   — 10 % du catalogue — mais c'est un sous-ensemble où l'appariement devient exact, donc une
   mesure du taux d'erreur réel de la méthode par nom. Ça vaut soit une correction de l'article
   publié, soit une suite.
+- **Le docstring de `registres_classe.py` décrit encore la collecte pilote, pas la collecte
+  complète.** Sa section « Ce que la collecte réelle a donné » annonce 997 navires interrogés,
+  308 lignes, 142 confirmées, 132 avec IMO, 31 notations de design et 12 en exploitation. Le
+  Parquet livré par la collecte complète des 9 407 en porte 2 642, dont 1 007 confirmées, 983 avec
+  IMO (964 navires distincts), 74 notations de design et 37 en exploitation — les taux de rejet par
+  source du tableau sont périmés de la même façon. Ces chiffres-là sont ceux qui iront dans un
+  article : à réaligner sur le Parquet.
 - **Trois flux manquent au vecteur d'impacts, et le manque n'est pas neutre.**
   (1) La **charge hôtelière ne couvre que 3 des 11 groupes EEDI** — la climatisation en particulier
   est exclue, faute de la « interior space » qu'exigent les régressions TU Delft. C'est une

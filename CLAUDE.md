@@ -73,7 +73,11 @@ l'identique, et l'API applique 60 requêtes/minute tout en hébergeant la vitrin
   certifiée sur les hydrocarbures, les eaux noires, l'air ni l'antifouling. Borne, jamais un point :
   9,6 % des navires sont indéterminés faute de données.
 - **964 navires ont désormais un IMO** (`registres_classe.imo_confirmes()`). Le catalogue n'en
-  portait aucun — c'est ce qui bloquait toute jointure externe.
+  portait aucun — c'est ce qui bloquait toute jointure externe. Ne pas confondre avec les **983
+  correspondances confirmées portant un IMO** dans `data/registres_classe.parquet` : une ligne =
+  un couple (navire, registre), donc un navire confirmé par deux registres y compte deux fois.
+  964 est le nombre de **navires distincts** (`drop_duplicates("yacht_id")`), le seul des deux qui
+  se joint au catalogue.
 - **Le mur des 499 GT est réel mais ne biaise pas l'indice** : 482 navires dans la bande 475-499
   contre 13 dans 500-524, et 184 à exactement 499. Mais les navires à 499 GT sont dimensionnellement
   normaux (−0,8 % ± 0,9 contre leurs dimensions) : c'est de la conception, pas de la sous-déclaration.
