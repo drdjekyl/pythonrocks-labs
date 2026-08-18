@@ -56,5 +56,3 @@ laisser grossir sans revue.
   `figures_eda.py`, `viz.py` et `tests/test_yachts.py`. Dérive antérieure au chantier de l'index,
   accumulée faute de CI. Un `uv run ruff format .` la règle d'un coup — geste volontairement laissé
   à l'auteur, il touche quatre fichiers qu'il a écrits lui-même.
-- **Ce dépôt n'a ni pre-commit ni CI**, seul cas du workspace. Tant que c'est vrai, `ruff` et
-  `pytest` se lancent à la main — c'est écrit dans `CLAUDE.md`. Les câbler supprimerait l'exception.

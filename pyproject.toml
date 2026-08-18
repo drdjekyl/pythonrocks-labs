@@ -19,6 +19,7 @@ dev = [
     "jupyter>=1.1",
     "matplotlib>=3.9",
     "pytest>=9.1.1",
+    "pre-commit>=4.0",
 ]
 
 [build-system]

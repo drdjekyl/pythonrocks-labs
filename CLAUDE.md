@@ -86,10 +86,13 @@ l'identique, et l'API applique 60 requêtes/minute tout en hébergeant la vitrin
 ## Conventions
 
 - Python 3.12+, `uv`. Lint `ruff`, tests `pytest`.
-- **Ni pre-commit ni CI dans ce dépôt** — contrairement à tous les autres du workspace. Il faut donc
-  lancer `just check` (soit `uv run ruff check .`, `uv run ruff format --check .` et
-  `uv run pytest`) **à la main** avant de committer. C'est l'exception qui justifie de déroger à la
-  règle « pas de lint manuel » : ici rien d'autre n'attrape une régression.
+- **pre-commit et CI sont câblés** (2026-08-18) : le hook `ruff`/`ruff-format` tourne à chaque
+  commit, la CI rejoue `just lint` et `just test` sur 3.12 et 3.13 à chaque push. La règle
+  workspace « pas de lint manuel » s'applique donc ici comme partout ailleurs — ne pas relancer
+  `ruff check`/`pytest` pour vérifier son propre travail. `just install` branche le hook ; un
+  `.pre-commit-config.yaml` sans `pre-commit install` est une panne silencieuse, pas un garde-fou.
+  Le `rev` de `ruff-pre-commit` suit la version de ruff résolue dans `uv.lock` : les faire diverger
+  ferait s'accuser mutuellement le hook et la CI.
 - Le référentiel SFC des moteurs vit dans `api-lab`, pas ici, et son chargement sur les hôtes vivants
   passe par `platform/host/ansible/roles/restore/files/seed_engines.js` — voir `api-lab/CLAUDE.md`.
 - Budget doc : `README.md` (public, voir Scope) + `CLAUDE.md` + `MAINTENANCE.md`.
@@ -102,5 +105,5 @@ uv run jupyter lab
 uv run python src/labs/yachts.py                    # régénère l'instantané (~2 min, throttlé)
 uv run python src/labs/registres_classe.py <taille> # collecte IMO/notations, reprenable
 uv run python -m labs.reglementaire                 # répartition des obligations sur le catalogue
-just check                                          # lint + tests, à lancer à la main avant de committer
+just check                                          # lint + tests, exactement ce que rejoue la CI
 ```

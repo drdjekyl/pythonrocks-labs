@@ -1,0 +1,47 @@
+# Le filet de sécurité automatique : ces vérifications tournent à CHAQUE commit,
+# sur les fichiers du commit uniquement (donc en une fraction de seconde). Un
+# commit qui ne passe pas est refusé.
+#
+# Installation, une fois pour toutes :  just install
+# Vérifier tout le dépôt d'un coup   :  uv run pre-commit run --all-files
+#
+# Ce fichier existe *en même temps* que `.github/workflows/ci.yml` et ne fait pas
+# doublon avec lui : celui-ci attrape la faute avant qu'elle n'entre dans
+# l'historique, la CI attrape ce qui dépend de la machine (dépendances
+# manquantes, lock désynchronisé). Le dépôt n'a longtemps eu ni l'un ni l'autre,
+# et la dérive s'est vue : quatre fichiers avaient cessé de passer
+# `ruff format --check` sans que rien ne le signale.
+
+repos:
+  # --- Hygiène de base : petits problèmes, gros dégâts sur la durée ---------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace      # espaces en fin de ligne
+      - id: end-of-file-fixer        # newline finale manquante
+      - id: check-yaml               # un YAML invalide ne part pas en CI
+      - id: check-toml               # idem pour pyproject.toml
+      - id: check-merge-conflict     # marqueurs <<<<<<< oubliés
+      - id: check-added-large-files
+        # Plus haut que le 1 Mo du gabarit, volontairement : les instantanés
+        # `data/*.parquet` sont suivis par git (c'est ce qui rend les chiffres
+        # des articles rejouables à l'identique) et `yachts.parquet` pèse à lui
+        # seul ~1,1 Mo. Le garde-fou reste utile contre le vrai accident : une
+        # collecte AIS brute poussée par erreur.
+        args: [--maxkb=2000]
+
+  # --- Le linter et le formateur -------------------------------------------
+  # `rev` est une version FIGÉE, alignée sur le ruff résolu dans `uv.lock`
+  # (0.16.2). Deux versions différentes de part et d'autre se contrediraient :
+  # le hook reformaterait ce que la CI accepte, ou l'inverse. Quand `uv.lock`
+  # avance, cette ligne avance avec lui.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.2
+    hooks:
+      # `ruff-check`, pas `ruff` : depuis ruff 0.9 ce dernier n'est qu'un alias
+      # rétrocompatible, et le hook affiche un avertissement de dépréciation à
+      # chaque commit. Le gabarit `python-starter` est resté sur l'ancien nom
+      # parce qu'il épingle une version antérieure.
+      - id: ruff-check    # cherche les problèmes
+        args: [--fix]     # et corrige ce qu'il peut
+      - id: ruff-format   # puis reformate

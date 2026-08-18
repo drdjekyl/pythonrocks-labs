@@ -4,9 +4,10 @@ set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 default:
     @just --list
 
-# Crée l'environnement et installe tout
+# Crée l'environnement, installe tout, et branche le hook de pre-commit
 install:
     uv sync
+    uv run pre-commit install
 
 # Vérifie le style et cherche les erreurs
 lint:
@@ -26,9 +27,9 @@ donnees:
 lab:
     uv run jupyter lab
 
-# Lance les tests (pas de `--cov` ici : ni pytest-cov ni CI dans ce dépôt)
+# Lance les tests (pas de `--cov` ici : pas de pytest-cov dans ce dépôt)
 test:
     uv run pytest
 
-# Tout vérifier avant de committer — ce dépôt n'a ni pre-commit ni CI
+# Tout vérifier — exactement ce que fait la CI
 check: lint test

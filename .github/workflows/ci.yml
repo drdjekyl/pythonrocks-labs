@@ -1,0 +1,72 @@
+# L'intégration continue : les mêmes vérifications que `just check`, rejouées par
+# GitHub sur une machine neuve à chaque push.
+#
+# C'est ce qui répond à « pourtant ça marche chez moi » : la CI n'a ni le cache
+# local, ni le `.venv` accumulé depuis des mois, ni les instantanés Parquet
+# régénérés à la main. Elle part du dépôt tel qu'un lecteur d'article le clone —
+# ce qui est exactement la promesse que ce dépôt public fait à ce lecteur.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    # `requires-python = ">=3.12"` dans pyproject.toml est une promesse faite au
+    # lecteur qui clone : cette matrice est ce qui la vérifie réellement.
+    strategy:
+      fail-fast: false  # une version qui casse n'annule pas l'autre job : on veut
+                        # savoir si le problème touche 3.13 seul ou les deux
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      # Les actions publiées par GitHub lui-même (`actions/*`) restent épinglées
+      # par version. Celles d'un tiers le sont par empreinte de commit — voir
+      # l'étape suivante.
+      - uses: actions/checkout@v4
+
+      # `@<empreinte> # v10.0.1` plutôt que `@v10` : un tag Git n'est qu'une
+      # étiquette, et son auteur peut la redéplacer vers un autre commit à tout
+      # moment. Une version compromise en amont s'exécuterait alors ici, avec les
+      # droits du workflow, sans qu'aucune ligne de ce fichier n'ait changé.
+      # L'empreinte désigne un contenu précis et définitif.
+      #
+      # Le numéro de version en fin de ligne n'est pas décoratif : c'est lui qui
+      # garde la ligne lisible, et Dependabot le réécrit en même temps que
+      # l'empreinte (voir `.github/dependabot.yml`). Sans ce fichier, un
+      # épinglage par empreinte figerait l'action pour toujours — y compris sur
+      # une faille corrigée depuis.
+      - name: Installer uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true  # met en cache les paquets téléchargés entre runs
+
+      - name: Installer Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      # `--locked` échoue si uv.lock ne correspond plus à pyproject.toml. C'est
+      # volontaire : sans ce garde-fou, une dépendance ajoutée sans relancer
+      # `uv lock` passerait la CI et casserait chez le prochain à cloner.
+      - name: Installer les dépendances
+        run: uv sync --locked --dev
+
+      # La CI appelle les MÊMES recettes que vous en local, par leur nom. C'est ce
+      # qui rend vraie la phrase « `just check` reproduit la CI » : il n'y a pas
+      # deux listes de commandes à garder synchronisées, il n'y en a qu'une, dans
+      # le justfile.
+      - name: Installer just
+        run: uv tool install rust-just
+
+      # Deux étapes plutôt qu'un `just check` unique, uniquement pour que GitHub
+      # distingue un échec de lint d'un échec de test dans son affichage.
+      - name: Lint
+        run: just lint
+
+      - name: Tests
+        run: just test

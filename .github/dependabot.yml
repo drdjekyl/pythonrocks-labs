@@ -1,0 +1,30 @@
+# Le pendant obligatoire de l'épinglage par empreinte de commit, dans
+# `.github/workflows/ci.yml`.
+#
+# Épingler une action par empreinte la fige : plus aucun tag ne la fera avancer,
+# et un correctif de sécurité publié en amont resterait indéfiniment hors de la
+# CI. Ce fichier rétablit le mouvement — Dependabot réécrit l'empreinte *et* le
+# numéro de version en fin de ligne, dans une pull request relue avant fusion.
+# Épingler sans Dependabot, c'est troquer un risque contre un autre.
+#
+# Limité à `github-actions`, volontairement. Les dépendances Python n'y sont pas :
+# les alertes de sécurité de GitHub les couvrent déjà et ouvrent d'elles-mêmes une
+# PR en cas de faille réelle, alors qu'une mise à jour de routine produirait ici un
+# flux continu de PR sur pandas, jupyter et matplotlib — du bruit qui finirait par
+# masquer les mises à jour d'actions que ce fichier existe pour proposer. Et une
+# montée de version silencieuse de pandas sur un dépôt dont la valeur est de
+# rejouer des chiffres publiés est exactement ce qu'on ne veut pas automatiser.
+#
+# `groups` rassemble tous les bumps d'actions dans UNE pull request hebdomadaire
+# au lieu d'une par action.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    groups:
+      github-actions:
+        patterns:
+          - "*"
