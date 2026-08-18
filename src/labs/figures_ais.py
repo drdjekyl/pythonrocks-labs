@@ -25,7 +25,6 @@ from labs.viz import (
     CONTEXTE,
     INK,
     MUTED,
-    SURFACE,
     appliquer_style,
     enregistrer,
     titrer,
