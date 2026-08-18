@@ -94,8 +94,16 @@ def fig_entonnoir(scores):
     total = int(n.sum())
     confirmes = int(n.get("confirme", 0))
     lignes = [
-        ("Rejetés — longueur incompatible", int(n.get("longueur incompatible", 0)), CONTEXTE),
-        ("Rejetés — type AIS non plaisance", int(n.get("type non plaisance", 0)), CONTEXTE),
+        (
+            "Rejetés — longueur incompatible",
+            int(n.get("longueur incompatible", 0)),
+            CONTEXTE,
+        ),
+        (
+            "Rejetés — type AIS non plaisance",
+            int(n.get("type non plaisance", 0)),
+            CONTEXTE,
+        ),
         ("Écartés — longueur absente", int(n.get("longueur absente", 0)), CONTEXTE),
         ("Confirmés", confirmes, ACCENT),
     ]
@@ -106,9 +114,15 @@ def fig_entonnoir(scores):
     ax.barh(y, valeurs, color=[c for _, _, c in lignes], height=0.62)
     for i, (_, v, couleur) in enumerate(lignes):
         part = f"  ({v / total * 100:.0f} %)"
-        ax.text(v + max(valeurs) * 0.015, i, espace(v) + part, va="center", fontsize=10,
-                color=INK if couleur is ACCENT else MUTED,
-                fontweight="600" if couleur is ACCENT else "normal")
+        ax.text(
+            v + max(valeurs) * 0.015,
+            i,
+            espace(v) + part,
+            va="center",
+            fontsize=10,
+            color=INK if couleur is ACCENT else MUTED,
+            fontweight="600" if couleur is ACCENT else "normal",
+        )
 
     ax.set_yticks(y, [libelle for libelle, _, _ in lignes], fontsize=dim(11, 10))
     ax.invert_yaxis()
@@ -117,9 +131,14 @@ def fig_entonnoir(scores):
     ax.grid(axis="y", visible=False)
     # Sous-titre court, sur une seule ligne : `titrer` ne renvoie pas à la ligne, et un texte
     # plus large que les axes fait déborder la boîte englobante à l'enregistrement.
-    titrer(ax, "Cinq correspondances sur six sont fausses",
-           dim(f"{espace(total)} navires nommés comme un yacht, trois journées de février 2023.",
-               f"{espace(total)} navires nommés comme un yacht."))
+    titrer(
+        ax,
+        "Cinq correspondances sur six sont fausses",
+        dim(
+            f"{espace(total)} navires nommés comme un yacht, trois journées de février 2023.",
+            f"{espace(total)} navires nommés comme un yacht.",
+        ),
+    )
     return fig
 
 
@@ -138,20 +157,50 @@ def fig_longueurs(scores):
     borne = 160
     xs = np.array([0.0, borne])
     # La bande d'abord, pour qu'elle passe sous les points.
-    ax.fill_between(xs, xs - TOLERANCE_M, xs + TOLERANCE_M, color=ACCENT, alpha=0.16,
-                    linewidth=0)
+    ax.fill_between(
+        xs, xs - TOLERANCE_M, xs + TOLERANCE_M, color=ACCENT, alpha=0.16, linewidth=0
+    )
     ax.plot(xs, xs, color=CONTEXTE, linewidth=1.4)
-    ax.scatter(rejete["longueur_catalogue"], rejete["Length"], s=13, alpha=0.5,
-               color=CONTEXTE, linewidths=0, rasterized=True)
-    ax.scatter(confirme["longueur_catalogue"], confirme["Length"], s=15, alpha=0.8,
-               color=ACCENT, linewidths=0, rasterized=True)
+    ax.scatter(
+        rejete["longueur_catalogue"],
+        rejete["Length"],
+        s=13,
+        alpha=0.5,
+        color=CONTEXTE,
+        linewidths=0,
+        rasterized=True,
+    )
+    ax.scatter(
+        confirme["longueur_catalogue"],
+        confirme["Length"],
+        s=15,
+        alpha=0.8,
+        color=ACCENT,
+        linewidths=0,
+        rasterized=True,
+    )
 
     # Étiquettes directes plutôt qu'une légende : c'est la règle du style maison, et ici elle
     # libère en prime le coin haut-gauche, seul endroit où l'aberrant du haut peut s'annoter.
-    ax.text(0.68, 0.80, f"Confirmés\nécart ≤ {TOLERANCE_M:.0f} m", transform=ax.transAxes,
-            color=ACCENT, fontsize=dim(11, 12), fontweight="600", va="center")
-    ax.text(0.02, 0.15, "Écartés sur\nla longueur", transform=ax.transAxes,
-            color=MUTED, fontsize=dim(11, 12), va="center")
+    ax.text(
+        0.68,
+        0.80,
+        f"Confirmés\nécart ≤ {TOLERANCE_M:.0f} m",
+        transform=ax.transAxes,
+        color=ACCENT,
+        fontsize=dim(11, 12),
+        fontweight="600",
+        va="center",
+    )
+    ax.text(
+        0.02,
+        0.15,
+        "Écartés sur\nla longueur",
+        transform=ax.transAxes,
+        color=MUTED,
+        fontsize=dim(11, 12),
+        va="center",
+    )
 
     # Les deux extrêmes, calculés et non choisis : un dans chaque sens, parce que la
     # coïncidence de noms joue aussi bien dans un sens que dans l'autre — une vedette qui
@@ -165,9 +214,13 @@ def fig_longueurs(scores):
             f"{cas['VesselName'].strip()} : {cas['Length']:.0f} m déclarés,"
             f"\n{cas['longueur_catalogue']:.0f} m au catalogue",
             xy=(cas["longueur_catalogue"], cas["Length"]),
-            xytext=decalage, textcoords="offset points", ha=ancrage,
-            fontsize=dim(10, 11), color=MUTED,
-            arrowprops={"arrowstyle": "->", "color": CONTEXTE, "linewidth": 1.2})
+            xytext=decalage,
+            textcoords="offset points",
+            ha=ancrage,
+            fontsize=dim(10, 11),
+            color=MUTED,
+            arrowprops={"arrowstyle": "->", "color": CONTEXTE, "linewidth": 1.2},
+        )
 
     ax.set_xlim(0, borne)
     ax.set_ylim(0, borne)
@@ -177,9 +230,14 @@ def fig_longueurs(scores):
     # de la figure voisine. La diagonale à 45° ne valait pas cette incohérence.
     ax.set_xlabel("Longueur au catalogue (m)")
     ax.set_ylabel("Longueur déclarée en AIS (m)")
-    titrer(ax, "Un nom identique, deux navires sans rapport",
-           dim("Un point par navire ; en cas d'homonymes, le candidat le plus proche.",
-               "Homonymes : le candidat le plus proche."))
+    titrer(
+        ax,
+        "Un nom identique, deux navires sans rapport",
+        dim(
+            "Un point par navire ; en cas d'homonymes, le candidat le plus proche.",
+            "Homonymes : le candidat le plus proche.",
+        ),
+    )
     return fig
 
 

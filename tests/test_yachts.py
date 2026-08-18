@@ -73,7 +73,9 @@ def test_refuse_une_forme_inconnue_en_le_disant():
 
 
 def test_s_arrete_au_total_annonce():
-    client = ClientFactice([{"items": navires(PAGE_SIZE, i * PAGE_SIZE)} for i in range(3)])
+    client = ClientFactice(
+        [{"items": navires(PAGE_SIZE, i * PAGE_SIZE)} for i in range(3)]
+    )
 
     lignes = recuperer(client, journal=lambda _: None, pause=lambda _: None)
 
@@ -106,7 +108,9 @@ def test_echoue_plutot_que_de_boucler_indefiniment():
 
 def test_signale_sa_progression_a_chaque_page():
     """Sans progression, un script long est indébogable — c'est ce qui a masqué la panne n°1."""
-    client = ClientFactice([{"items": navires(PAGE_SIZE, i * PAGE_SIZE)} for i in range(3)])
+    client = ClientFactice(
+        [{"items": navires(PAGE_SIZE, i * PAGE_SIZE)} for i in range(3)]
+    )
     lignes_journal = []
 
     recuperer(client, journal=lignes_journal.append, pause=lambda _: None)
@@ -120,7 +124,9 @@ def test_signale_sa_progression_a_chaque_page():
 
 def test_respecte_le_delai_entre_deux_pages():
     """La limite est de 60 requêtes/minute et l'API héberge aussi le site vitrine."""
-    client = ClientFactice([{"items": navires(PAGE_SIZE, i * PAGE_SIZE)} for i in range(3)])
+    client = ClientFactice(
+        [{"items": navires(PAGE_SIZE, i * PAGE_SIZE)} for i in range(3)]
+    )
     pauses = []
 
     recuperer(client, journal=lambda _: None, pause=pauses.append)

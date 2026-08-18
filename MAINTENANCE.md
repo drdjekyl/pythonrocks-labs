@@ -52,7 +52,3 @@ laisser grossir sans revue.
 - **Deux valeurs de `main_eng_count` sont aberrantes** dans le catalogue amont — 545 et 1 100
   moteurs, erreurs de saisie manifestes. `resume_par_cohorte()` utilise des médianes et y résiste,
   mais tout calcul par navire les traînera. Le correctif appartient à `api-lab`, pas ici.
-- **Quatre fichiers ne passent pas `ruff format --check`** : `src/labs/figures_ais.py`,
-  `figures_eda.py`, `viz.py` et `tests/test_yachts.py`. Dérive antérieure au chantier de l'index,
-  accumulée faute de CI. Un `uv run ruff format .` la règle d'un coup — geste volontairement laissé
-  à l'auteur, il touche quatre fichiers qu'il a écrits lui-même.

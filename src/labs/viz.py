@@ -37,35 +37,37 @@ POLICE = ["Public Sans", "system-ui", "Helvetica Neue", "Arial", "sans-serif"]
 
 def appliquer_style():
     """Applique le style global. À appeler une fois avant de tracer."""
-    mpl.rcParams.update({
-        "svg.fonttype": "none",
-        "font.family": "sans-serif",
-        "font.sans-serif": POLICE,
-        "font.size": 11,
-        "figure.facecolor": SURFACE,
-        "axes.facecolor": SURFACE,
-        "savefig.facecolor": SURFACE,
-        "text.color": INK,
-        "axes.labelcolor": MUTED,
-        "axes.edgecolor": GRILLE,
-        "xtick.color": MUTED,
-        "ytick.color": MUTED,
-        "axes.titlecolor": INK,
-        # Grille et axes : traits pleins d'un cheveu, jamais pointillés — un pointillé se
-        # lit comme un seuil ou une projection alors que ce n'est qu'une grille.
-        "axes.grid": True,
-        "grid.color": GRILLE,
-        "grid.linewidth": 0.8,
-        "grid.linestyle": "-",
-        "axes.axisbelow": True,
-        "axes.linewidth": 0.8,
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "xtick.major.size": 0,
-        "ytick.major.size": 0,
-        "legend.frameon": False,
-        "figure.constrained_layout.use": True,
-    })
+    mpl.rcParams.update(
+        {
+            "svg.fonttype": "none",
+            "font.family": "sans-serif",
+            "font.sans-serif": POLICE,
+            "font.size": 11,
+            "figure.facecolor": SURFACE,
+            "axes.facecolor": SURFACE,
+            "savefig.facecolor": SURFACE,
+            "text.color": INK,
+            "axes.labelcolor": MUTED,
+            "axes.edgecolor": GRILLE,
+            "xtick.color": MUTED,
+            "ytick.color": MUTED,
+            "axes.titlecolor": INK,
+            # Grille et axes : traits pleins d'un cheveu, jamais pointillés — un pointillé se
+            # lit comme un seuil ou une projection alors que ce n'est qu'une grille.
+            "axes.grid": True,
+            "grid.color": GRILLE,
+            "grid.linewidth": 0.8,
+            "grid.linestyle": "-",
+            "axes.axisbelow": True,
+            "axes.linewidth": 0.8,
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+            "xtick.major.size": 0,
+            "ytick.major.size": 0,
+            "legend.frameon": False,
+            "figure.constrained_layout.use": True,
+        }
+    )
 
 
 def titrer(ax, titre, sous_titre=None):
@@ -74,14 +76,22 @@ def titrer(ax, titre, sous_titre=None):
     Le titre dit ce que le lecteur doit retenir, pas ce que le graphique contient :
     « la médiane ne bouge pas » plutôt que « longueur par décennie ».
     """
-    ax.set_title(titre, loc="left", fontsize=13, fontweight="600",
-                 pad=32 if sous_titre else 10)
+    ax.set_title(
+        titre, loc="left", fontsize=13, fontweight="600", pad=32 if sous_titre else 10
+    )
     if sous_titre:
         # `pad` réserve la hauteur du titre ; le sous-titre se pose juste au-dessus des axes.
         # Un écart trop faible les fait se chevaucher — matplotlib ne détecte pas la
         # collision, il faut la prévenir.
-        ax.text(0, 1.03, sous_titre, transform=ax.transAxes, fontsize=10,
-                color=MUTED, va="bottom")
+        ax.text(
+            0,
+            1.03,
+            sous_titre,
+            transform=ax.transAxes,
+            fontsize=10,
+            color=MUTED,
+            va="bottom",
+        )
 
 
 def fr(valeur, decimales=2):
