@@ -25,9 +25,3 @@ laisser grossir sans revue.
   — 10 % du catalogue — mais c'est un sous-ensemble où l'appariement devient exact, donc une
   mesure du taux d'erreur réel de la méthode par nom. Ça vaut soit une correction de l'article
   publié, soit une suite.
-
-## ☐ Priorité basse
-
-- **Deux valeurs de `main_eng_count` sont aberrantes** dans le catalogue amont — 545 et 1 100
-  moteurs, erreurs de saisie manifestes. `resume_par_cohorte()` utilise des médianes et y résiste,
-  mais tout calcul par navire les traînera. Le correctif appartient à `api-lab`, pas ici.
