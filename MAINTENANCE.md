@@ -25,17 +25,6 @@ laisser grossir sans revue.
   — 10 % du catalogue — mais c'est un sous-ensemble où l'appariement devient exact, donc une
   mesure du taux d'erreur réel de la méthode par nom. Ça vaut soit une correction de l'article
   publié, soit une suite.
-- **Trois flux manquent au vecteur d'impacts, et le manque n'est pas neutre.**
-  (1) La **charge hôtelière ne couvre que 3 des 11 groupes EEDI** — la climatisation en particulier
-  est exclue, faute de la « interior space » qu'exigent les régressions TU Delft. C'est une
-  sous-estimation assumée sur le poste qui domine le bilan annuel.
-  (2) Le **PM n'est pas calculé** : aucune source primaire trouvée dans le temps imparti.
-  (3) L'**antifouling** et l'**ancrage** sont hors v1 : le premier demanderait une surface mouillée
-  et un taux de lessivage sourcés, le second est un risque et non un flux continu.
-- **L'agrégation du vecteur en un scalaire reste à écrire**, et c'est le geste le plus contestable
-  de tout le travail. Exige des facteurs de caractérisation ACV publiés (ReCiPe, EF 3.1), leur
-  publication explicite, et une analyse de sensibilité. Ne jamais inventer de pondération : c'est
-  précisément ce que ce travail reproche à l'état de l'art.
 
 ## ☐ Priorité basse
 

@@ -82,6 +82,18 @@ l'identique, et l'API applique 60 requêtes/minute tout en hébergeant la vitrin
   contre 13 dans 500-524, et 184 à exactement 499. Mais les navires à 499 GT sont dimensionnellement
   normaux (−0,8 % ± 0,9 contre leurs dimensions) : c'est de la conception, pas de la sous-déclaration.
   L'hypothèse de biais a été testée et rejetée — ne pas la ressortir sans nouvelle donnée.
+- **Le vecteur d'impacts couvre trois flux sur un périmètre plus large, pas par oubli.** La charge
+  hôtelière ne couvre que 3 des 11 groupes EEDI — la climatisation en particulier est exclue, faute
+  de la « interior space » qu'exigent les régressions TU Delft, absente du catalogue : sous-estimation
+  assumée sur le poste qui domine le bilan annuel. Le PM n'est pas calculé, faute de source primaire
+  trouvée. L'antifouling et l'ancrage sont hors v1 : le premier demanderait une surface mouillée et un
+  taux de lessivage sourcés, le second est un risque et non un flux continu. Ce sont des limites de
+  périmètre, pas un backlog — combler l'une d'elles est une nouvelle enquête, pas une tâche.
+- **L'agrégation du vecteur en un scalaire n'existe délibérément pas.** C'est le geste le plus
+  contestable qu'aurait ce travail : il exigerait des facteurs de caractérisation ACV publiés (ReCiPe,
+  EF 3.1), leur publication explicite, et une analyse de sensibilité. Ne jamais inventer de
+  pondération — c'est précisément ce que ce travail reproche à l'état de l'art des scores
+  environnementaux existants.
 
 ## Conventions
 
