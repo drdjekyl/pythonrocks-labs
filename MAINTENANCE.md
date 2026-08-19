@@ -8,14 +8,11 @@ laisser grossir sans revue.
 
 ## ☐ Priorité haute
 
-- **Aucune vérification de source n'a été faite sur trois chiffres qui iront dans un article.**
+- **Aucune vérification de source n'a été faite sur deux chiffres qui iront dans un article.**
   Tant que ce n'est pas fait, rien de ce qui suit n'est publiable.
   (1) La **table des seuils MARPOL** de `reglementaire.py` a été reprise telle quelle du chapitre 4
   du mémoire de M2 de l'auteur, jamais confrontée au texte des conventions.
-  (2) Les **seuils Tier NOx** utilisés par `vecteur_impacts.py` pour son diagnostic viennent de
-  DieselNet ; `imo.org` a répondu 500 aux deux tentatives de sourçage. À re-sourcer sur l'OMI ou
-  EUR-Lex.
-  (3) Les **983 correspondances confirmées portant un IMO** (soit 964 navires distincts, voir
+  (2) Les **983 correspondances confirmées portant un IMO** (soit 964 navires distincts, voir
   `imo_confirmes()`) et les **74 notations de design** de `data/registres_classe.parquet` n'ont pas
   été revérifiées à la main contre les registres : seule la logique d'appariement est testée, sur
   des réponses simulées. Un échantillon suffirait.
