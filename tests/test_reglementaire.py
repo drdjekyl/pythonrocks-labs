@@ -1,9 +1,11 @@
 """Les cas limites qui font la valeur de la couche réglementaire.
 
-Chaque seuil de la table du chapitre 4 a son test au bord exact (399/400, 499/500, 99/100,
-15/16), plus le cas qui distingue vraiment cette couche d'un simple `if` : les données
-manquantes, qui doivent produire une troisième valeur (`None`) plutôt qu'une supposition
-silencieuse.
+Chaque seuil a son test au bord exact (399/400, 499/500, 99/100, 12/13, 15/16), plus le cas
+qui distingue vraiment cette couche d'un simple `if` : les données manquantes, qui doivent
+produire une troisième valeur (`None`) plutôt qu'une supposition silencieuse. Les seuils de
+base viennent de la table du chapitre 4 du mémoire de M2 de l'auteur ; trois d'entre eux ont
+été corrigés le 2026-08-21 après confrontation au texte primaire OMI (voir
+`src/labs/reglementaire.py`) — les tests ci-dessous couvrent la version corrigée.
 """
 
 import math
@@ -44,7 +46,7 @@ def test_400_gt_pile_ouvre_le_bloc_400():
     assert (o.IOPP, o.IAPP, o.IEE, o.AFS_CERTIFICATE) == (True, True, True, True)
 
 
-# --- 500 GT : ISM --------------------------------------------------------------------------
+# --- 500 GT : ISM, et sa seconde voie indépendante (navire à passagers) --------------------
 
 
 def test_499_gt_n_ouvre_pas_ism():
@@ -53,6 +55,29 @@ def test_499_gt_n_ouvre_pas_ism():
 
 def test_500_gt_pile_ouvre_ism():
     assert navire(gt=500.0).ISM is True
+
+
+def test_12_invites_n_ouvre_pas_ism_meme_sous_500_gt():
+    """SOLAS I/2(f) : un navire à passagers en transporte *plus de* douze, pas douze pile."""
+    assert navire(gt=50.0, invites=12).ISM is False
+
+
+def test_13_invites_ouvre_ism_meme_tres_sous_500_gt():
+    """La seconde voie de SOLAS IX/2 §1.1, absente de la table du mémoire, ajoutée le
+    2026-08-21 : contrairement aux navires de charge (§1.2/.3, "500 gross tonnage and
+    upwards"), un navire à passagers relève du Code ISM sans aucun seuil de tonnage. Un yacht
+    de 50 GT avec 13 invités reste soumis à l'ISM."""
+    o = navire(gt=50.0, invites=13)
+    assert o.ISM is True
+
+
+def test_ism_invites_manquant_avec_gt_sous_500_reste_indetermine():
+    assert navire(gt=50.0, invites=None).ISM is None
+
+
+def test_ism_gt_manquant_mais_plus_de_12_invites_tranche_quand_meme():
+    """Même court-circuit `OU` que pour ISPP/l'Annexe V : la voie passagers seule suffit."""
+    assert navire(gt=None, invites=20).ISM is True
 
 
 # --- 100 GT : GARBAGE_MGMT_PLAN -------------------------------------------------------------
@@ -70,9 +95,21 @@ def test_100_gt_pile_ouvre_le_plan_dechets():
 
 
 def test_15_invites_n_ouvre_pas_ispp():
-    """Le seuil est *plus de* 15, pas 15 compris."""
+    """Le seuil ISPP (Annexe IV) est *plus de* 15, pas 15 compris."""
     o = navire(gt=50.0, invites=15)
     assert o.ISPP is False
+
+
+def test_15_invites_pile_ouvre_le_plan_et_le_registre_mais_pas_ispp():
+    """Le cas qui distingue les deux textes : Annexe IV (ISPP, « more than 15 persons »,
+    strict) contre Annexe V (plan + registre, « 15 or more persons », inclusif). Confirmé
+    contre le texte primaire OMI le 2026-08-21 (MEPC.201/62, MEPC.360/79) — un navire certifié
+    pour EXACTEMENT 15 personnes doit le plan de gestion et le registre des ordures, pas
+    l'ISPP."""
+    o = navire(gt=50.0, invites=15)
+    assert o.ISPP is False
+    assert o.GARBAGE_MGMT_PLAN is True
+    assert o.GARBAGE_RECORD_BOOK is True
 
 
 def test_16_invites_ouvre_ispp_meme_sous_400_gt():
@@ -312,10 +349,21 @@ def test_reconcilie_avec_le_catalogue_reel():
     assert r.loc["IAPP", "applicable"] == 1724
     assert r.loc["IEE", "applicable"] == 1724
     assert r.loc["AFS_CERTIFICATE", "applicable"] == 1724
-    assert r.loc["ISM", "applicable"] == 926
     assert r.loc["ISPP", "applicable"] == 1820
-    assert r.loc["GARBAGE_RECORD_BOOK", "applicable"] == 1820
-    assert r.loc["GARBAGE_MGMT_PLAN", "applicable"] == 8172
+
+    # GARBAGE_RECORD_BOOK et GARBAGE_MGMT_PLAN : mêmes seuils depuis MEPC.360(79) (2024-05-01),
+    # donc même décompte -- 8 174, pas 1 820/8 172. Avant la correction du 2026-08-21, le
+    # registre appliquait encore le seuil pré-2024 (400 GT au lieu de 100), d'où son ancien
+    # compte proche de celui d'ISPP (1 820, même ordre de grandeur car même seuil GT) plutôt
+    # que du plan de gestion. +2 sur le plan par rapport à l'ancien 8 172 : deux navires
+    # certifiés pour EXACTEMENT 15 personnes, que le seuil strict >15 excluait à tort.
+    assert r.loc["GARBAGE_RECORD_BOOK", "applicable"] == 8174
+    assert r.loc["GARBAGE_MGMT_PLAN", "applicable"] == 8174
+
+    # ISM : 926 -> 1 178 avec l'ajout de la voie « navire à passagers » (SOLAS IX/2 §1.1, sans
+    # seuil GT) le 2026-08-21 -- 252 navires de moins de 500 GT mais transportant plus de 12
+    # invités, invisibles de l'ancienne table qui ne testait que le tonnage.
+    assert r.loc["ISM", "applicable"] == 1178
 
     # Navires échappant à tout le bloc certifié : le complément de ISPP.
     echappe = r.loc["ISPP", "non_applicable"]

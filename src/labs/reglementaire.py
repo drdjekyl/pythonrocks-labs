@@ -59,13 +59,47 @@ import pandas as pd
 RACINE = Path(__file__).resolve().parents[2]
 CATALOGUE = RACINE / "data" / "yachts.parquet"
 
-# --- Seuils, tels que relevés dans le mémoire (chapitre 4) --------------------------------
+# --- Seuils, confrontés au texte primaire OMI le 2026-08-21 -------------------------------
+#
+# La table reçue du mémoire de M2 (chapitre 4) comportait trois écarts avec le texte primaire,
+# trouvés en confrontant chaque seuil aux résolutions OMI elles-mêmes (pas une restitution
+# secondaire) : deux sur l'Annexe V (registre des ordures et seuil de personnes), un sur le
+# Code ISM (branche navire à passagers absente). Corrigés ci-dessous, chacun avec sa citation.
 
-# IOPP, IAPP, IEE, AFS_CERTIFICATE — et une des deux branches de ISPP / GARBAGE_RECORD_BOOK
+# IOPP, IAPP, IEE, AFS_CERTIFICATE — et une des deux branches de ISPP
 SEUIL_GT_CERTIFICATS = 400.0
+
+# Annexe V, Règle 10 §2 (plan de gestion des ordures) ET §3 (registre des ordures) depuis
+# l'amendement MEPC.360(79) (adopté 2022-12-16, en vigueur 2024-05-01) : "Every ship of 100
+# gross tonnage and above ... shall carry a garbage management plan" / "shall be provided with
+# a Garbage Record Book" -- MÊME seuil pour les deux obligations. Avant cet amendement, le
+# registre exigeait 400 GT (comme les certificats ci-dessus) ; c'est ce seuil pré-2024 que le
+# mémoire portait, et que ce module appliquait à tort au registre jusqu'au 2026-08-21.
 SEUIL_GT_GARBAGE_MGMT_PLAN = 100.0
-SEUIL_GT_ISM = 500.0
-SEUIL_INVITES = 15  # strict : *plus de* 15, pas 15 compris
+
+SEUIL_GT_ISM = 500.0  # SOLAS IX/2 §1.2-.3, navires de charge -- voir SEUIL_PASSAGERS_SOLAS pour l'exception
+
+# ISPP (Annexe IV) SEUL : "more than 15 persons" (confirmé 2026-08-20 contre imo.org) --
+# comparaison stricte, ne PAS réutiliser ce seuil pour l'Annexe V ci-dessous, dont la
+# formulation est différente (voir SEUIL_INVITES_ANNEXE_V).
+SEUIL_INVITES = 15
+
+# Annexe V, Règle 10 §2/§3 : "every ship which is certified to carry 15 or more persons" --
+# INCLUSIF (>=15), contrairement à SEUIL_INVITES (ISPP, Annexe IV, strict >15). Un navire
+# certifié pour EXACTEMENT 15 personnes doit le plan de gestion et le registre des ordures,
+# mais pas l'ISPP -- les deux constantes ne peuvent plus être confondues même si elles portent
+# la même valeur numérique.
+SEUIL_INVITES_ANNEXE_V = 15
+
+# SOLAS I/2(f) : "A passenger ship is a ship which carries more than twelve passengers." Une
+# fois ce seuil franchi, SOLAS IX/2 §1.1 impose le Code ISM SANS seuil de tonnage (à la
+# différence de §1.2/.3 ci-dessus, qui précisent tous deux "500 gross tonnage and upwards") --
+# un yacht de moins de 500 GT mais transportant plus de 12 invités reste soumis à l'ISM.
+# `number_of_guests` sert ici de proxy à "passengers" au sens SOLAS, comme il sert déjà de
+# proxy à "personnes certifiées" pour ISPP/l'Annexe V ci-dessus -- même hypothèse
+# d'interprétation, pas une nouvelle.
+SEUIL_PASSAGERS_SOLAS = 12
+
 SEUIL_LONGUEUR_AFS_DECLARATION = 24.0  # strict : *plus de* 24 m, et *sous* 400 GT
 SEUIL_LONGUEUR_MOUILLAGE_POSIDONIES = 24.0  # large : 24 m *ou plus*
 
@@ -128,7 +162,13 @@ def _table(gt: pd.Series, longueur: pd.Series, invites: pd.Series) -> pd.DataFra
     gt_certificats = gt >= SEUIL_GT_CERTIFICATS
     gt_garbage_plan = gt >= SEUIL_GT_GARBAGE_MGMT_PLAN
     gt_ism = gt >= SEUIL_GT_ISM
-    invites_seuil = invites > SEUIL_INVITES
+    invites_seuil = invites > SEUIL_INVITES  # ISPP seul (Annexe IV, strict)
+    invites_seuil_annexe_v = (
+        invites >= SEUIL_INVITES_ANNEXE_V
+    )  # plan + registre (inclusif)
+    navire_passagers = (
+        invites > SEUIL_PASSAGERS_SOLAS
+    )  # SOLAS I/2(f), déclenche l'ISM sans seuil GT
     longueur_seuil = longueur > SEUIL_LONGUEUR_AFS_DECLARATION
 
     return pd.DataFrame(
@@ -139,9 +179,12 @@ def _table(gt: pd.Series, longueur: pd.Series, invites: pd.Series) -> pd.DataFra
             "IEE": gt_certificats,
             "AFS_CERTIFICATE": gt_certificats,
             "AFS_DECLARATION": longueur_seuil & ~gt_certificats,
-            "GARBAGE_MGMT_PLAN": gt_garbage_plan | invites_seuil,
-            "GARBAGE_RECORD_BOOK": gt_certificats | invites_seuil,
-            "ISM": gt_ism,
+            "GARBAGE_MGMT_PLAN": gt_garbage_plan | invites_seuil_annexe_v,
+            # Même seuil GT que GARBAGE_MGMT_PLAN depuis MEPC.360(79) (2024-05-01) -- les deux
+            # obligations restent distinctes (deux documents différents), leurs seuils ont
+            # simplement convergé. Voir la note sur SEUIL_GT_GARBAGE_MGMT_PLAN.
+            "GARBAGE_RECORD_BOOK": gt_garbage_plan | invites_seuil_annexe_v,
+            "ISM": gt_ism | navire_passagers,
         }
     )
 
