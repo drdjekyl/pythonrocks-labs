@@ -105,6 +105,39 @@ appliquée à la flotte entière** — ni par extrapolation, ni par modèle — 
 elle a été construite : un petit ensemble d'études de cas de haute confiance, à des fins de
 validation, jamais une colonne à joindre sur les 9 407.
 
+## La plage de préfixe IMO n'est pas neutre : un « imoNumber » de registre n'est pas toujours un IMO OMI
+
+DNV et LR appellent tous deux `imoNumber`/`imoNo` le champ que ce module recopie tel quel dans
+`Correspondance.imo` (`dnv_extraire_details`, `lr_extraire_candidats`) — mais pour un yacht de
+plaisance, exempté d'IMO statutaire (SOLAS ne l'impose qu'aux navires de commerce/passagers d'une
+certaine jauge), ce que le registre appelle ainsi est souvent son propre identifiant interne, pas
+un numéro reconnu par l'OMI. Le signal est net dans les données : sur les 983 correspondances
+confirmées portant un IMO, 556 (57 %, dont 547 via Lloyd's Register) commencent par « 1 »
+(1000000–1999999) — une plage que l'OMI n'a commencé à distribuer qu'en mars 2023, après
+épuisement de la plage haute historique (FAQ OMI, cité par la page Wikipedia « IMO number » : le
+numéro 9999993 a été le dernier de l'ancienne plage, attribué à un navire livrable en 2027). L'année
+de construction médiane de ces 556 navires est 2007, bien avant que la plage « 1 » n'existe : la
+quasi-totalité n'a donc jamais pu recevoir légitimement ce numéro comme IMO OMI. Les ~427 autres,
+dans la plage 4000000–9999999, sont la plage **plausible** pour un vrai numéro OMI (elle couvre
+aussi tous les IMO historiques pré-2023).
+
+Un échantillon vérifié de correspondances en plage plausible (voir `MAINTENANCE.md`, 2026-08-21)
+montre que « plausible » n'est pas non plus une garantie à elle seule : le nom seul, même confirmé
+par un champ (`confirmer`), colle parfois le bon numéro de plage au mauvais navire — un tanker ou
+un vraquier homonyme, construit la même année qu'un yacht qui porte le même nom générique. Ce
+n'est pas propre à la plage basse : c'est la même faille de fond que documentée plus haut
+(« L'appariement par nom ne suffit jamais seul »), simplement invisible tant qu'on ne compare pas
+au registre public.
+
+**`imo_confirmes(min_imo=4_000_000)` ou paramètre similaire ? Envisagé, pas ajouté.** Un simple
+seuil de préfixe écarterait les ~556 cas de plage basse, mais l'échantillon vérifié montre des faux
+positifs *dans* la plage plausible aussi (nom générique + année coïncidente confirmant le mauvais
+navire) — un filtre par préfixe seul donnerait un faux sentiment de fiabilité sans résoudre le
+problème de fond, qui est la confirmation par un seul champ sur un nom commun, pas le préfixe en
+soi. Documenter la distinction ici, sans figer un seuil dans le code, laisse la décision à qui
+consomme ce mapping en connaissance de cause plutôt que de coder une garantie que les données ne
+tiennent pas encore.
+
 ## Politesse
 
 Chaque client HTTP (un par domaine) espace ses propres appels d'au moins `DELAI` secondes,
@@ -199,6 +232,10 @@ class Correspondance:
     yacht_id: str
     yacht_nom: str
     source: str  # "dnv" | "lr" | "rina"
+    # <4M (57 % des confirmées, ~tout LR) : probablement l'id interne du registre pour ce yacht
+    # sans IMO statutaire, pas un IMO OMI (l'OMI ne distribue la plage "1" que depuis mars 2023) ;
+    # >=4M est la plage plausible pour un vrai IMO OMI, mais pas une garantie à elle seule — voir
+    # la docstring du module et MAINTENANCE.md.
     imo: str | None
     notation_design_brute: str | None
     notation_operation_brute: str | None

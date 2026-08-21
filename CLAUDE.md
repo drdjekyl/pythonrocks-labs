@@ -72,12 +72,22 @@ l'identique, et l'API applique 60 requêtes/minute tout en hébergeant la vitrin
 - **Le plancher réglementaire** : entre **71 % et 80,6 %** du catalogue n'a aucune obligation
   certifiée sur les hydrocarbures, les eaux noires, l'air ni l'antifouling. Borne, jamais un point :
   9,6 % des navires sont indéterminés faute de données.
-- **964 navires ont désormais un IMO** (`registres_classe.imo_confirmes()`). Le catalogue n'en
-  portait aucun — c'est ce qui bloquait toute jointure externe. Ne pas confondre avec les **983
-  correspondances confirmées portant un IMO** dans `data/registres_classe.parquet` : une ligne =
-  un couple (navire, registre), donc un navire confirmé par deux registres y compte deux fois.
-  964 est le nombre de **navires distincts** (`drop_duplicates("yacht_id")`), le seul des deux qui
-  se joint au catalogue.
+- **964 navires ont un `imo` renvoyé par un registre** (`registres_classe.imo_confirmes()`) — mais
+  ce n'est plus lisible comme « 964 IMO statutaires OMI ». Sur les **983 correspondances
+  confirmées portant un IMO** dans `data/registres_classe.parquet` (une ligne = un couple navire
+  × registre, donc un navire confirmé par deux registres y compte deux fois), **427 (43 %)**
+  tombent dans la plage plausible pour un vrai numéro OMI (≥4 000 000) et **556 (57 %, dont 547
+  via Lloyd's Register)** tombent dans une plage basse (<4 000 000) que l'OMI n'a commencé à
+  distribuer qu'en mars 2023 — incompatible avec l'année de construction médiane (2007) de ces
+  556 navires. Pour un yacht de plaisance, exempté d'IMO statutaire, ce que DNV/LR appellent
+  `imoNumber` dans leur propre base est vraisemblablement leur identifiant interne de registre, pas
+  un numéro OMI (voir la docstring de `registres_classe.py`). 964 reste le nombre de **navires
+  distincts** (`drop_duplicates("yacht_id")`, le seul qui se joint au catalogue), mais un
+  échantillon vérifié de 18 correspondances en plage plausible (MAINTENANCE.md, 2026-08-21) montre
+  que même ≥4M n'immunise pas contre une fausse correspondance par nom générique : 4/18 (22 %) sont
+  en réalité l'IMO d'un tanker ou vraquier homonyme confirmé à tort par la seule année de
+  construction. Ne pas traiter `imo_confirmes()` comme un mapping fiable sans vérification
+  individuelle au cas par cas.
 - **Le mur des 499 GT est réel mais ne biaise pas l'indice** : 482 navires dans la bande 475-499
   contre 13 dans 500-524, et 184 à exactement 499. Mais les navires à 499 GT sont dimensionnellement
   normaux (−0,8 % ± 0,9 contre leurs dimensions) : c'est de la conception, pas de la sous-déclaration.
