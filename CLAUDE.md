@@ -29,7 +29,23 @@ src/labs/
   reglementaire.py     plancher réglementaire MARPOL (2026-08-17)
   registres_classe.py  IMO et notations de classe via DNV/LR/RINA (2026-08-17)
   vecteur_impacts.py   vecteur d'impacts par invité-nuit et par GT-heure (2026-08-17)
+  pypi_ecosystem.py       collecte pypistats.org + pypi.org, 51 paquets (2026-08-25)
+  pypi_features.py        ingénierie de variables, normalisation vs baseline (2026-08-25)
+  pypi_clustering.py      K-Means + ACP, non supervisé (2026-08-25)
+  pypi_classification.py  établi/montant/déclinant depuis cadence/âge/récence (2026-08-25)
 ```
+
+**`pypi_*.py` est une investigation indépendante du fil rouge yachts** — pas une extension,
+un sujet entièrement différent : un cours Python qui retourne son propre outillage en objet
+d'étude ML, via les statistiques de téléchargement de 51 paquets PyPI choisis à la main. Aucune
+contrainte de non-nominalité ici (ce sont des noms de paquets publics, pas des entités privées
+identifiables) — mais la même rigueur sur les données manquantes et les suppositions silencieuses
+s'applique. Détail méthodologique et résultats réels (collecte du 2026-08-25) dans les docstrings
+de chaque module : la normalisation par baseline (`pypi_features.py`), le clustering non
+supervisé qui ne retrouve qu'imparfaitement les 3 catégories pressenties (`pypi_clustering.py`,
+ARI 0,575), et la classification qui distingue bien « montant » mais confond souvent « établi »
+et « déclinant » à partir des seules variables de cadence/âge/récence (`pypi_classification.py`,
+balanced accuracy 0,656 contre 0,305 pour un classifieur aléatoire).
 
 Les analyses partent de `data/*.parquet`, jamais de l'API en direct : reproductibilité à
 l'identique, et l'API applique 60 requêtes/minute tout en hébergeant la vitrine.
@@ -127,5 +143,9 @@ uv run jupyter lab
 uv run python src/labs/yachts.py                    # régénère l'instantané (~2 min, throttlé)
 uv run python src/labs/registres_classe.py <taille> # collecte IMO/notations, reprenable
 uv run python -m labs.reglementaire                 # répartition des obligations sur le catalogue
+uv run python src/labs/pypi_ecosystem.py            # collecte pypistats.org + pypi.org, reprenable (~80s)
+uv run python -m labs.pypi_features                 # ingénierie de variables -> data/pypi_features.parquet
+uv run python -m labs.pypi_clustering                # K-Means + ACP, résultats réels dans la sortie
+uv run python -m labs.pypi_classification            # établi/montant/déclinant depuis cadence/âge/récence
 just check                                          # lint + tests, exactement ce que rejoue la CI
 ```

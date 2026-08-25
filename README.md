@@ -8,6 +8,11 @@ Tout part du même jeu de données réel : **9 407 yachts**, servis par
 [api.pythonrocks.academy](https://api.pythonrocks.academy/docs). Les articles s'enchaînent sur
 cet unique fil rouge plutôt que sur trois démonstrations sans rapport.
 
+Exception assumée depuis le 2026-08-25 : `pypi_ecosystem.py` et les modules `pypi_*.py` qui en
+dépendent forment une investigation indépendante — pas une extension du fil rouge yachts, un
+sujet entièrement différent (les statistiques de téléchargement de 51 paquets PyPI, comme
+terrain d'exercice ML). Documenté à part ci-dessous.
+
 ## Démarrer
 
 ```bash
@@ -41,6 +46,10 @@ Si [`just`](https://github.com/casey/just) est installé (`uv tool install rust-
 | `reglementaire.py` | plancher réglementaire MARPOL par navire |
 | `registres_classe.py` | IMO et notations de classe via DNV / Lloyd's Register / RINA |
 | `vecteur_impacts.py` | impacts flux par flux, par invité-nuit et par GT-heure |
+| `pypi_ecosystem.py` | collecte pypistats.org + pypi.org pour 51 paquets — investigation indépendante, voir ci-dessus |
+| `pypi_features.py` | ingénierie de variables, normalisation contre un baseline (`certifi`) |
+| `pypi_clustering.py` | K-Means + ACP non supervisés sur ces variables |
+| `pypi_classification.py` | établi / montant / déclinant prédit depuis la seule cadence de release |
 
 `tests/` couvre les modules d'analyse (`pytest`). `figures/` et les couches silver/gold ne sont
 pas versionnées : elles se régénèrent en une commande.
@@ -64,6 +73,23 @@ Pour régénérer le catalogue (≈ 2 minutes, throttlé volontairement) :
 
 ```bash
 uv run python src/labs/yachts.py
+```
+
+Trois autres Parquet, indépendants du catalogue yacht, alimentent l'investigation PyPI
+(voir ci-dessus) :
+
+- **`data/pypi_downloads.parquet`** — historique quotidien `without_mirrors` de 51 paquets
+  (9 231 lignes, 181 jours par paquet), depuis pypistats.org.
+- **`data/pypi_releases.parquet`** — première/dernière release et nombre de releases par
+  paquet, depuis pypi.org/pypi/*/json.
+- **`data/pypi_features.parquet`** — une ligne par paquet, produite par `pypi_features.py` à
+  partir des deux fichiers ci-dessus.
+
+Pour régénérer (≈ 80 s, reprenable) :
+
+```bash
+uv run python src/labs/pypi_ecosystem.py
+uv run python -m labs.pypi_features
 ```
 
 ## Licence
